@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Home</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fdfdfd;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .header span {
+            font-size: 0.9em;
+            color: #555;
+        }
+        .header .plan {
+            font-weight: bold;
+            padding: 4px 10px; /* Slightly larger padding */
+            border-radius: 12px; /* More rounded */
+            color: white;
+            font-size: 0.85em;
+            text-transform: uppercase; /* Uppercase plan name */
+            letter-spacing: 0.5px;
+        }
+        .header .plan.free { background-color: #6c757d; } /* Grey */
+        .header .plan.standard { background-color: #007bff; } /* Blue */
+        .header .plan.pro { background-color: #28a745; } /* Green */
+        .header .usage-info {
+            font-size: 0.85em;
+            color: #444;
+        }
+        .logout-btn {
+            padding: 5px 10px;
+            background-color: #dc3545;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 0.9em;
+            white-space: nowrap;
+            border: none; /* Ensure button style */
+            cursor: pointer;
+        }
+        .logout-btn:hover { background-color: #c82333; }
+        .upgrade-section {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            text-align: center;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .upgrade-section p {
+            margin-top: 0;
+            margin-bottom: 12px; /* More space */
+            font-size: 0.95em;
+            color: #333;
+        }
+        .upgrade-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .upgrade-btn {
+            display: inline-block;
+            padding: 10px 18px; /* Larger buttons */
+            color: white;
+            text-decoration: none;
+            border-radius: 4px; /* Slightly more rounded */
+            font-weight: bold;
+            font-size: 0.9em;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        /* Use the single link, but style buttons differently */
+        .upgrade-btn.standard { background-color: #007bff; }
+        .upgrade-btn.standard:hover { background-color: #0056b3; }
+        .upgrade-btn.pro { background-color: #28a745; }
+        .upgrade-btn.pro:hover { background-color: #218838; }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 20px; /* Added space below h1 */
+        }
+        form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        textarea {
+            flex-grow: 1;
+            padding: 10px; /* More padding */
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            resize: vertical;
+            min-height: 45px; /* Slightly taller */
+            font-size: 1em;
+        }
+        button[type="submit"] {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s ease;
+        }
+        button[type="submit"]:hover { background-color: #0056b3; }
+        button[type="submit"]:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .chat-area {
+            border: 1px dashed #ddd;
+            padding: 15px;
+            min-height: 150px; /* Larger chat area */
+            background-color: #f9f9f9;
+            border-radius: 3px;
+            margin-top: 15px;
+            line-height: 1.5; /* Better readability */
+        }
+        .chat-area p { margin: 8px 0; } /* More space between messages */
+        .chat-area .user { font-weight: bold; color: #0056b3; }
+        .chat-area .bot { color: #155724; }
+        .flash {
+            padding: 12px 15px; /* More padding */
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            font-size: 0.95em;
+        }
+        .flash.error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .flash.success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .flash.warning { background-color: #fff3cd; color: #856404; border-color: #ffeeba; }
+        .flash.info { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span>Welcome, {{ user_email }}!</span>
+        <span class="plan {{ plan_name.lower() }}">Plan: {{ plan_name }}</span>
+        <span class="usage-info">Usage: {{ current_limit_info }}</span>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+
+    <!-- Flash Messages Area -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <!-- End Flash Messages -->
+
+    <!-- Upgrade Section - Conditionally Displayed -->
+    {% if is_free_plan or is_standard_plan %}
+    <div class="upgrade-section">
+        {% if is_free_plan %}
+            <p>Upgrade your plan for more messages!</p>
+            <div class="upgrade-options">
+                <!-- Both buttons use the SAME link, but text indicates the target plan -->
+                <a href="{{ upgrade_checkout_link }}" target="_blank" class="upgrade-btn standard">
+                    Upgrade to Standard ({{ STANDARD_PLAN_MONTHLY_LIMIT }}/month)
+                </a>
+                <a href="{{ upgrade_checkout_link }}" target="_blank" class="upgrade-btn pro">
+                    Upgrade to Pro (Unlimited)
+                </a>
+            </div>
+            <p style="font-size: 0.8em; margin-top: 10px; color: #6c757d;">
+                Please ensure you use the email '{{ user_email }}' during checkout.
+            </p>
+        {% elif is_standard_plan %}
+            <p>Upgrade to Pro for unlimited messages!</p>
+            <div class="upgrade-options">
+                 <!-- Only show Pro upgrade option if already on Standard -->
+                <a href="{{ upgrade_checkout_link }}" target="_blank" class="upgrade-btn pro">
+                    Upgrade to Pro
+                </a>
+            </div>
+             <p style="font-size: 0.8em; margin-top: 10px; color: #6c757d;">
+                Please ensure you use the email '{{ user_email }}' during checkout.
+            </p>
+        {% endif %}
+    </div>
+    {% endif %}
+    <!-- End Upgrade Section -->
+
+    <h1>Simple Chatbot</h1>
+
+    <form method="post">
+        <textarea name="user_input"
+                  placeholder="Ask the bot something..."
+                  required
+                  aria-label="Chat input">{{ user_message or '' }}</textarea>
+        <button type="submit" {% if message_limit_reached %}disabled title="Message limit reached"{% endif %}>
+            Send
+        </button>
+    </form>
+
+    <div class="chat-area" aria-live="polite">
+        {% if user_message and not message_limit_reached %}
+            <p><span class="user">You:</span> {{ user_message | escape }}</p>
+        {% endif %}
+        {% if bot_response %}
+             <p><span class="bot">Bot:</span> {{ bot_response | escape }}</p>
+        {% endif %}
+
+        {# Initial state message or limit reached message #}
+        {% if not user_message and not bot_response and not message_limit_reached %}
+             <p>Ask the chatbot a question above.</p>
+        {% elif message_limit_reached %}
+             <p style="color: red; font-weight: bold;">Your message limit has been reached for the current plan/period.</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>
