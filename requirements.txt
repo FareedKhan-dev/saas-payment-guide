@@ -1,0 +1,6 @@
+Flask
+supabase
+python-dotenv
+openai
+werkzeug
+requests
