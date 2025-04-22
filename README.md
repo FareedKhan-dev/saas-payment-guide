@@ -35,15 +35,15 @@ Here is our complete stack:
 - [Lemon Squeezy Configuration](#lemon-squeezy-configuration)
 - [LLM API Configuration](#llm-api-configuration)
 - [Setup and Preparation](#setup-and-preparation)
-- [**Creating a Lemon Squeezy Customer**](#creating-a-lemon-squeezy-customer)
-- [**User Signup Route**](#user-signup-route)
-- [**User Login Route**](#user-login-route)
-- [**User Logout Route**](#user-logout-route)
-- [**Data Fetching \& Monthly Reset**](#data-fetching--monthly-reset)
-- [**Determine Plan Info** \& **Limits**](#determine-plan-info--limits)
-- [**Processing Allowed Messages**](#processing-allowed-messages)
-- [**Checkout Link \& Rendering**](#checkout-link--rendering)
-- [**Lemon Squeezy Webhook Handler**](#lemon-squeezy-webhook-handler)
+- [Creating a Lemon Squeezy Customer](#creating-a-lemon-squeezy-customer)
+- [User Signup Route](#user-signup-route)
+- [User Login Route](#user-login-route)
+- [User Logout Route](#user-logout-route)
+- [Data Fetching \& Monthly Reset](#data-fetching--monthly-reset)
+- [Determine Plan Info \& Limits](#determine-plan-info--limits)
+- [Processing Allowed Messages](#processing-allowed-messages)
+- [Checkout Link \& Rendering](#checkout-link--rendering)
+- [Lemon Squeezy Webhook Handler](#lemon-squeezy-webhook-handler)
 - [Creating the Frontend Templates](#creating-the-frontend-templates)
 - [Creating Webhook Event](#creating-webhook-event)
 - [Testing Webapp](#testing-webapp)
@@ -336,7 +336,7 @@ So …
 *   We load all the `Lemon Squeezy` configuration variables, including the variant IDs and the single checkout link base URL.
 *   Plan limit constants are defined for clarity.
 
-## **Creating a Lemon Squeezy Customer**
+## Creating a Lemon Squeezy Customer
 
 During signup, we want to create a corresponding customer record in Lemon Squeezy *before* we save the user to our own database.
 
@@ -408,7 +408,7 @@ So …
 *   If successful, it extracts the `customer_id` from the JSON response and returns it.
 *   If there's an error (like a `4xx` or `5xx` status code), it attempts to extract a specific error message.
 
-## **User Signup Route**
+## User Signup Route
 
 For our web app, we need to create a signup route that allows users to create an account. The user data will be stored in our Supabase database.
 
@@ -482,7 +482,7 @@ So the Signup Process works like this …
 *   If any step fails, it shows an error message (`flash`) and redirects back to the signup page.
 *   On `GET`, it simply shows the `signup.html` template.
 
-## **User Login Route**
+## User Login Route
 
 Now that we have coded the signup route, which also creates a LemonSqueezy user and links it with the ID, next we need to create a login route for that user.
 
@@ -543,7 +543,7 @@ The login process is pretty simple this is how it is working …
 *   Shows error messages for incorrect credentials or if the user isn't found.
 *   On `GET`, it shows the `login.html` template.
 
-## **User Logout Route**
+## User Logout Route
 
 We also need a simple logout route that allows the user to log out of our web app.
 
@@ -568,7 +568,7 @@ def logout():
 *   Flashes a confirmation message.
 *   Redirects the user to the login page.
 
-## **Data Fetching & Monthly Reset**
+## Data Fetching & Monthly Reset
 
 Now we need to code a primary route where users interact with the chatbot after logging in. It handles displaying the interface (`GET` request) and processing messages (`POST` request).
 
@@ -665,7 +665,7 @@ The `user_data` dictionary is unpacked, converting the `last_message_timestamp` 
 
 If the user is on a paid plan, the reset date has passed, and conditions are met, the message counter is reset, with the next reset date set by the Lemon Squeezy webhook.
 
-## **Determine Plan Info** & **Limits**
+## Determine Plan Info & Limits
 
 Now we determine user-friendly strings for the plan and limits based on the flags, and then we start handling the case where the user actually submitted a message (a POST request).
 
@@ -758,7 +758,7 @@ Inside the if `user_message` and `nebius_client` block, the logic checks the use
 *   **Standard Plan**: Compares `messages_this_month` with the plan's limit and disables the message if the limit is reached.
 *   **Free Plan**: If the user has sent a message before and the last message was within the last hour, it checks if the hourly limit is reached; if so, blocks the message. Otherwise, it updates the message count and the timestamp.
 
-## **Processing Allowed Messages**
+## Processing Allowed Messages
 
 If the limit checks determine `allow_message` is still `True`, we proceed to call the AI and update the database.
 
@@ -847,7 +847,7 @@ It then sends the user's message to the AI using `nebius_client.chat.completions
 *   If the AI call succeeds, it attempts to update the user's record in Supabase with the payload, also wrapped in a try...except block.
 *   If the AI call fails, it sets an error message and skips the database update; if the database update fails after the AI call, it logs a warning.
 
-## **Checkout Link & Rendering**
+## Checkout Link & Rendering
 
 Finally, still within the main `/` route function, we prepare the checkout link with the prefilled `email` and render the `home.html` template, passing all the necessary data.
 
@@ -890,7 +890,7 @@ If the link isn't properly configured, a warning is printed. Finally, it calls F
 
 This completes the main application route (`/`).
 
-## **Lemon Squeezy Webhook Handler**
+## Lemon Squeezy Webhook Handler
 
 This route doesn’t interact directly with the user’s browser. Instead, it acts as a listener, waiting for notifications (webhooks) sent directly from the Lemon Squeezy platform whenever important events related to subscriptions occur in our store (like a new subscription starting, a payment succeeding, or a subscription being cancelled).
 
